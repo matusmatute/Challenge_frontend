@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import {  useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { socket } from '../utils/socket';
 
 interface Movie {
   _id: string;
@@ -32,6 +34,19 @@ const Home = () => {
 
     fetchMovies();
   }, []);
+  
+  useEffect(() => {
+    socket.on('newMovie', (movieData) => {
+      toast.success(`Nueva película añadida: ${movieData.title} Haz clic para ver`, {
+        onClick: () => navigate(`/movie/${movieData.id}`), // Navega al detalle de la película al hacer clic
+        position: "top-right",
+        autoClose: 10000,});
+      });
+
+      return () => {
+        socket.off('newMovie');
+      }
+  }, [navigate]);
 
   // Filtrar las películas por título, género y autor
   const filteredMovies = movies.filter((movie) =>
